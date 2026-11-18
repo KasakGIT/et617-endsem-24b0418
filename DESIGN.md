@@ -179,3 +179,30 @@ The application will prioritise:
 - A complete, resumable learning experience within ten minutes.
 
 Implementation details, AI behaviour, validation and fallback mechanisms will be documented as the application develops.
+
+## 9. Learner memory and evidence-based progress
+
+The learner record is stored locally under `equal-adaptive-v2`. It stores the current activity, saved activity position, answers, diagnostic choice, written reflection, confidence rating, hint state, event log, attempts and independent successes. State updates merge partial changes into the existing React state. Autosave persists the full record after state changes.
+
+### Pause and resume (C4)
+
+During an active activity, **Pause & save** stores the current screen as the resume point and returns to the welcome screen. **Resume your session** restores that screen and the saved inputs. The same saved state is available after a refresh or accidental browser close. A fresh session requires confirmation and archives the current session locally rather than silently deleting it.
+
+### Progress evidence
+
+The progress dashboard distinguishes activity completion from demonstrated understanding. It reports question attempts, reasoning entries, hints, misconception signals, independent correct responses and confidence change. Concept labels use four evidence states: demonstrated independently, demonstrated with assistance, needs more practice and not yet assessed.
+
+The current prototype has a single diagnostic decision and a small number of follow-up tasks. Therefore its concept-level evidence is intentionally limited; it should not be presented as a validated mastery score. The event log is the source for dashboard indicators. Approximate elapsed time is based on browser timestamps between recorded interactions and is not a measure of attention.
+
+### Adaptive response
+
+When a learner misses a micro-check, the tutor moves to a support screen and changes the representation (for example, equal piles for balance or equal groups for coefficients). Repeated missed attempts trigger a prerequisite mini-practice prompt. At the start of a fresh session, the tutor also checks the most recently archived session for a misconception label. If the same label appears again in the new diagnostic, it flags a recurring pattern and foregrounds an alternative representation. This is a transparent rule-based adaptation; it does not claim that an AI model independently inferred a recurring pattern. The repository contains a server-side AI evaluator endpoint with schema validation, but the current React flow does not invoke it. The deployed learner experience therefore uses the transparent rule-based tutor; the endpoint must not be represented as active AI functionality until it is connected and tested.
+
+
+## 10. Focused sessions and session library
+
+The welcome screen offers four short learning paths within the same T3 topic: inverse operations, keeping equality balanced, understanding coefficients, and two-step equations. Each path uses a distinct diagnostic equation, a topic-aligned micro-check and a new transfer equation. This reduces repetition while retaining the same reassuring learning sequence: diagnose, explain, check, transfer and reflect.
+
+The learner can browse the session archive from the progress dashboard. Completed sessions are archived when they finish; an active or paused session is archived when the learner starts another focus. The archive preserves its topic, recorded answers, event log, confidence, hint use and outcomes. Opening a past entry shows that session's summary. The current unfinished session can still be resumed independently.
+
+Session data is browser-local (`localStorage`), so it persists on the same browser/device but is not a cross-device learner account or cloud database. Topic variation in this prototype is authored content selected by the learner; it is not presented as AI-generated question generation.
